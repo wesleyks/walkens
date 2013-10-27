@@ -14,7 +14,6 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		gHash = null,
 		gHashChanged = false,
 		streamSource = null,
-		d = new Date(),
 		color,
 		uuid;
 
@@ -39,7 +38,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			px -= vx;
 			py -= vy;
 		}
-		var deleteList = [];
+		var deleteList = [],
+			d = new Date();
 		for (var i in objectList) {
 			//objectList[i].vx *= 0.99;
 			//objectList[i].vy *= 0.99;
@@ -124,6 +124,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				var parsedData = $.parseJSON(e.data);
 				if (typeof parsedData == 'object') {
 					if (parsedData.action == 'add') {
+						var d = new Date();
 						parsedData.lastUpdated = d.getTime();
 						parsedData.x = parseFloat(parsedData.x);
 						parsedData.y = parseFloat(parsedData.y);
