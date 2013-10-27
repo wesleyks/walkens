@@ -44,7 +44,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
-			if (objectList[i].lastUpdated + 10000 < d.getTime()) {
+			if (objectList[i].lastUpdated + 5000 < d.getTime()) {
 				delete objectList[i];
 			}
 		}
@@ -105,7 +105,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function continuousUpdatePosition() {
 		updatePosition('add');
-		setTimeout(continuousUpdatePosition, 2000);
+		setTimeout(continuousUpdatePosition, 1000);
 	}
 
 	function streamObjects() {
@@ -132,7 +132,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				}
 			}
 		}
-		setTimeout(streamObjects, 3000);
+		setTimeout(streamObjects, 2000);
 	}
 
 	function leaveMark() {

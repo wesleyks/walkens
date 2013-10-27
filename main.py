@@ -68,9 +68,9 @@ def storeMark():
 		'vx': 0.0,
 		'vy': 0.0
 	}
+	r.publish(gHash, json.dumps(value))
 	r.set(key, json.dumps(value))
 	r.expires(key, 10000)
-	r.publish(gHash, json.dumps(value))
 	print value
 	return '0'
 
