@@ -73,10 +73,10 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			}
 		}
 		context.closePath();
-		context.strokeStyle = '#000';
+		context.fillStyle = color;
 		context.beginPath();
 		context.arc(width / 2, height / 2, 15, 0, Math.PI * 2);
-		context.stroke();
+		context.fill();
 		context.closePath();
 	}
 
