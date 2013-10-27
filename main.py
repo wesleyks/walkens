@@ -29,8 +29,14 @@ def hashesToSearch(x, y):
 	return gHashes
 
 def event_stream(channels):
-	pubsub = r.pubsub();
-	pubsub.subscribe(channels);
+	pubsub = r.pubsub()
+	pubsub.subscribe(channels)
+	keys = set()
+	for c in channels:
+		for k in r.keys(c + '*'):
+			keys.add(k)
+	for k in keys:
+		yield 'data: %s\n\n' % r.get(k)
 	for message in pubsub.listen():
 		yield 'data: %s\n\n' % message['data']
 
@@ -50,6 +56,7 @@ def storeMark():
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
+	key = gHash + markId
 	value = {
 		'action': 'add',
 		'type': 'm',
@@ -59,6 +66,8 @@ def storeMark():
 		'vx': 0.0,
 		'vy': 0.0
 	}
+	r.set(key, json.dumps(value))
+	r.expires(key, 10000)
 	r.publish(gHash, json.dumps(value))
 	print value
 	return '0'

@@ -14,6 +14,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		gHash = null,
 		gHashChanged = false,
 		streamSource = null,
+		d = new Date(),
 		uuid;
 	
 	function clamp(val, min, max) {
@@ -33,6 +34,9 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
+			if (objectList[i].lastUpdated + 10000 < d.getTime()) {
+				delete objectList[i];
+			}
 		}
 	}
 
@@ -106,6 +110,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				var parsedData = $.parseJSON(e.data);
 				if (typeof parsedData == 'object') {
 					if (parsedData.action == 'add') {
+						parsedData.lastUpdated = d.getTime();
 						parsedData.x = parseFloat(parsedData.x);
 						parsedData.y = parseFloat(parsedData.y);
 						parsedData.vx = parseFloat(parsedData.vx);
