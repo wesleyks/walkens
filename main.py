@@ -37,7 +37,7 @@ def event_stream(channels):
 			keys.add(k)
 	data = [r.get(k) for k in keys]
 	for d in data:
-		yield 'data: %s\n\n' % data
+		yield 'data: %s\n\n' % d
 	for message in pubsub.listen():
 		yield 'data: %s\n\n' % message['data']
 
@@ -71,7 +71,7 @@ def storeMark():
 	}
 	r.publish(gHash, json.dumps(value))
 	r.set(key, json.dumps(value))
-	r.expires(key, 10000)
+	r.expires(key, 1000)
 	print value
 	return '0'
 
