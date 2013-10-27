@@ -68,11 +68,12 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		requestAnimationFrame(run);
 	}
 
-	function updatePosition() {
+	function updatePosition(action) {
 		$.ajax({
 			url: '/position',
 			type: 'POST',
 			data: {
+				action: action,
 				uuid: uuid,
 				x: px,
 				y: py,
@@ -88,7 +89,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	}
 
 	function continuousUpdatePosition() {
-		updatePosition();
+		updatePosition('add');
 		setTimeout(continuousUpdatePosition, 2000);
 	}
 
@@ -103,12 +104,15 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			streamSource.onmessage = function(e) {
 				var parsedData = $.parseJSON(e.data);
 				if (typeof parsedData == 'object') {
-					parsedData.x = parseFloat(parsedData.x);
-					parsedData.y = parseFloat(parsedData.y);
-					parsedData.vx = parseFloat(parsedData.vx);
-					parsedData.vy = parseFloat(parsedData.vy);
-					objectList[parsedData.uuid] = parsedData;
-					console.log(parsedData);
+					if (parsedData.action == 'add') {
+						parsedData.x = parseFloat(parsedData.x);
+						parsedData.y = parseFloat(parsedData.y);
+						parsedData.vx = parseFloat(parsedData.vx);
+						parsedData.vy = parseFloat(parsedData.vy);
+						objectList[parsedData.uuid] = parsedData;
+					} else {
+						delete objectList[parsedData.uuid];
+					}
 				}
 			}
 		}
@@ -128,9 +132,12 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function start() {
 		run();
-		continuousUpdatePosition();
+		continuousUpdatePosition('add');
 		streamObjects();
 		//bg.play();
+		window.onbeforeunload = function() {
+			updatePosition('remove');
+		};
 	}
 
 	function initialize(clientuuid) {
@@ -167,7 +174,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				vx = 0;
 				vy = 0;
 			}
-			updatePosition();
+			updatePosition('add');
 		});
 	}
 	this.start = start;
