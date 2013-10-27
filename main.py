@@ -35,8 +35,9 @@ def event_stream(channels):
 	for c in channels:
 		for k in r.keys(c + '*'):
 			keys.add(k)
-	for k in keys:
-		yield 'data: %s\n\n' % r.get(k)
+	data = [r.get(k) for k in keys]
+	for d in data:
+		yield 'data: %s\n\n' % data
 	for message in pubsub.listen():
 		yield 'data: %s\n\n' % message['data']
 
