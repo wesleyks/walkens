@@ -15,7 +15,17 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		gHashChanged = false,
 		streamSource = null,
 		d = new Date(),
+		color,
 		uuid;
+
+	function get_random_color() {
+		var letters = '0123456789ABCDEF'.split('');
+		var color = '#';
+		for (var i = 0; i < 6; i++ ) {
+			color += letters[Math.round(Math.random() * 15)];
+		}
+		return color;
+	}
 	
 	function clamp(val, min, max) {
 		return Math.min(Math.max(val, min), max);
@@ -52,7 +62,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 					context.fillStyle = '#5f5';
 					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
 				} else {
-					context.fillStyle = '#666';
+					context.fillStyle = player.color;
 					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 5, 0, Math.PI * 2);
 				}
 				context.fill();
@@ -131,7 +141,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			type: 'POST',
 			data: {
 				x: px,
-				y: py
+				y: py,
+				color: color
 			}
 		});
 	}
@@ -140,6 +151,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		run();
 		continuousUpdatePosition('add');
 		streamObjects();
+		color = get_random_color();
 		//bg.play();
 		window.onbeforeunload = function() {
 			updatePosition('remove');

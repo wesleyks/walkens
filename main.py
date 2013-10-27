@@ -51,6 +51,7 @@ def genUUID():
 @app.route('/mark', methods=['POST'])
 def storeMark():
 	markId = str(uuid.uuid4())
+	color = request.form['color']
 	x = request.form['x']
 	y = request.form['y']
 	modifiedX = float(x) / 1112.0
@@ -61,6 +62,7 @@ def storeMark():
 		'action': 'add',
 		'type': 'm',
 		'uuid': markId,
+		'color': color,
 		'x': x,
 		'y': y,
 		'vx': 0.0,
