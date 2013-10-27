@@ -3,12 +3,13 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 		width = canvasWidth,
 		height = canvasHeight,
 		grid = new Grid(context, width, height),
-		acceleration = 1,
-		maxVel = 3,
-		px = 0,
-		vx = 0,
-		py = 0,
-		vy = 0,
+		acceleration = 1.0,
+		maxVel = 3.0,
+		px = 0.0,
+		vx = 0.0,
+		py = 0.0,
+		vy = 0.0,
+		playerList = [],
 		uuid;
 	
 	function clamp(val, min, max) {
@@ -24,17 +25,48 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 
 	function draw() {
 		context.clearRect(0, 0, width, height);
-		context.beginPath();
 		grid.drawBoard(px, py);
+		context.beginPath();
 		context.arc(width / 2, height / 2, 10, 0, Math.PI * 2);
 		context.stroke();
 		context.closePath();
+		for (var i = 0; i < playerList.length; i++) {
+			var player = playerList[i];
+			if (player.uuid != uuid) {
+				context.beginPath();
+				context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 + (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
+				context.stroke();
+				context.closePath();
+			}
+		}
+		
 	}
 
 	function run() {
 		draw();
 		update();
 		requestAnimationFrame(run);
+	}
+
+	function updateAndGetNearby() {
+		$.ajax({
+			url: '/position',
+			type: 'POST',
+			data: {
+				uuid: uuid,
+				x: px,
+				y: py
+			},
+			dataType: 'json'
+		}).done(function(data) {
+			playerList = data;
+		});
+		setTimeout(updateAndGetNearby, 500);
+	}
+
+	function start() {
+		run();
+		updateAndGetNearby();
 	}
 
 	function initialize(clientuuid) {
@@ -58,6 +90,6 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 			vx = clamp(vx, -maxVel, maxVel);
 		});
 	}
-	this.run = run;
+	this.start = start;
 	this.initialize = initialize;
 }

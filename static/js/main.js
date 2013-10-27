@@ -11,5 +11,5 @@ $(document).ready(function() {
 		uuid = data;
 	});
 	w.initialize(uuid);
-	w.run();
+	w.start();
 });
