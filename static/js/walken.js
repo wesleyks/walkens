@@ -27,8 +27,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			py -= vy;
 		}
 		for (var i = 0; i < playerList.length; i++) {
-			playerList[i].vx *= 0.98;
-			playerList[i].vy *= 0.98;
+			playerList[i].vx *= 0.99;
+			playerList[i].vy *= 0.99;
 			playerList[i].x += playerList[i].vx;
 			playerList[i].y += playerList[i].vy;
 		}
