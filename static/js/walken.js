@@ -91,7 +91,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				playerList[i].y = parseFloat(playerList[i].y);
 			}
 		});
-		setTimeout(updateAndGetNearby, 300);
+		setTimeout(updateAndGetNearby, 250);
 	}
 
 	function leaveMark() {
