@@ -63,7 +63,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			if (player.uuid != uuid) {
 				context.beginPath();
 				if (player.type == 'p') {
-					context.fillStyle = '#5f5';
+					context.fillStyle = player.color;
 					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
 				} else {
 					context.fillStyle = player.color;
@@ -73,7 +73,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			}
 		}
 		context.closePath();
-		context.fillStyle = '#55f';
+		context.fillStyle = '#000';
 		context.beginPath();
 		context.arc(width / 2, height / 2, 10, 0, Math.PI * 2);
 		context.fill();
@@ -93,6 +93,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			data: {
 				action: action,
 				uuid: uuid,
+				color: color,
 				x: px,
 				y: py,
 				vx: vx,

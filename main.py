@@ -78,6 +78,7 @@ def storeMark():
 @app.route('/position', methods=['POST'])
 def storePosition():
 	playerId = request.form['uuid']
+	color = request.form['color']
 	x = request.form['x']
 	vx = request.form['vx']
 	y = request.form['y']
@@ -90,6 +91,7 @@ def storePosition():
 		'action': action,
 		'type': 'p',
 		'uuid': playerId,
+		'color': color,
 		'x': x,
 		'vx': vx,
 		'y': y,
