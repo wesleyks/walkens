@@ -21,6 +21,10 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 		vy *= 0.99;
 		px += vx;
 		py += vy;
+		for (var i = 0; i < playerList.length; i++) {
+			playerList[i].x += playerList[i].vx;
+			playerList[i].y += playerList[i].vy;
+		}
 	}
 
 	function draw() {
@@ -55,13 +59,15 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 			data: {
 				uuid: uuid,
 				x: px,
-				y: py
+				y: py,
+				vx: vx,
+				vy: vy
 			},
 			dataType: 'json'
 		}).done(function(data) {
 			playerList = data;
 		});
-		setTimeout(updateAndGetNearby, 500);
+		setTimeout(updateAndGetNearby, 100);
 	}
 
 	function start() {

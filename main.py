@@ -28,8 +28,8 @@ def storePosition():
 	playerId = request.form['uuid']
 	x = request.form['x']
 	y = request.form['y']
-	modifiedX = float(x) / 100
-	modifiedY = float(y) / 100
+	modifiedX = float(x) / 150
+	modifiedY = float(y) / 150
 	ghash = geohash.encode(modifiedX, modifiedY, 3)
 	key = ghash + playerId
 	value = {
@@ -38,8 +38,8 @@ def storePosition():
 		'y': request.form['y']
 	}
 	r.set(key, json.dumps(value))
-	r.expire(key, 6)
-	keys = r.keys(ghash + '*')
+	r.expire(key, 1)
+	keys = r.keys(ghash[:-1] + '*')
 	values = [json.loads(r.get(k)) for k in keys]
 	return json.dumps(values)
 
