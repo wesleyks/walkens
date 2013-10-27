@@ -80,6 +80,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				vx: vx,
 				vy: vy
 			},
+			async: (action == 'add' ? true : false)
 		}).done(function(data) {
 			if (data != gHash) {
 				gHashChanged = true;
