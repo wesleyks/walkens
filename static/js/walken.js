@@ -132,7 +132,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				}
 			}
 		}
-		setTimeout(streamObjects, 2000);
+		setTimeout(streamObjects, 3000);
 	}
 
 	function leaveMark() {
