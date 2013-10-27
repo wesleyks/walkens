@@ -4,19 +4,12 @@
    Author's custom styles
    ========================================================================== */
 
+canvas {
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+.controls {
+	padding: 10px;
+}

@@ -18,8 +18,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		return Math.min(Math.max(val, min), max);
 	}
 	function update() {
-		vx *= 0.99;
-		vy *= 0.99;
+		//vx *= 0.99;
+		//vy *= 0.99;
 		px += vx;
 		py += vy;
 		if (Math.abs(px) > maxBounds || Math.abs(py) > maxBounds) {
@@ -27,8 +27,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			py -= vy;
 		}
 		for (var i = 0; i < playerList.length; i++) {
-			playerList[i].vx *= 0.99;
-			playerList[i].vy *= 0.99;
+			//playerList[i].vx *= 0.99;
+			//playerList[i].vy *= 0.99;
 			playerList[i].x += playerList[i].vx;
 			playerList[i].y += playerList[i].vy;
 		}
@@ -42,12 +42,17 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		context.clearRect(0, 0, width, height);
 		grid.drawBoard(px, py);
 		context.beginPath();
-		context.fillStyle = '#5f5';
 		for (var i = 0; i < playerList.length; i++) {
 			var player = playerList[i];
 			if (player.uuid != uuid) {
 				context.beginPath();
-				context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
+				if (player.type == 'p') {
+					context.fillStyle = '#5f5';
+					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
+				} else {
+					context.fillStyle = '#666';
+					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 5, 0, Math.PI * 2);
+				}
 				context.fill();
 			}
 		}
@@ -89,6 +94,17 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		setTimeout(updateAndGetNearby, 200);
 	}
 
+	function leaveMark() {
+		$.ajax({
+			url: '/mark',
+			type: 'POST',
+			data: {
+				x: px,
+				y: py
+			}
+		});
+	}
+
 	function start() {
 		run();
 		updateAndGetNearby();
@@ -118,6 +134,21 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			}
 			vy = clamp(vy, -maxVel, maxVel);
 			vx = clamp(vx, -maxVel, maxVel);
+		});
+		$('#mark-button').click(function() {
+			leaveMark();
+		});
+		$(canvas).click(function(e) {
+			var clickX = e.offsetX - width / 2,
+				clickY = height / 2 - e.offsetY,
+				magnitude = Math.sqrt(clickY * clickY + clickX * clickX);
+			if (magnitude > 10) {
+				vx = 2 * maxVel * (clickX / magnitude) * (magnitude / width);
+				vy = 2 * maxVel * (clickY / magnitude) * (magnitude / height);
+			} else {
+				vx = 0;
+				vy = 0;
+			}
 		});
 	}
 	this.start = start;

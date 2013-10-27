@@ -28,6 +28,29 @@ def index():
 def genUUID():
 	return str(uuid.uuid4())
 
+@app.route('/mark', methods=['POST'])
+def storeMark():
+	markId = str(uuid.uuid4())
+	x = request.form['x']
+	y = request.form['y']
+	modifiedX = float(x) / 1112.0
+	modifiedY = float(y) / 1112.0
+	gHash = geohash.encode(modifiedX, modifiedY, 4)
+	key = gHash + markId
+	value = {
+		'type': 'm',
+		'uuid': markId,
+		'x': x,
+		'y': y,
+		'vx': 0.0,
+		'vy': 0.0
+	}
+	r.set(key, markId)
+	r.expire(key, 10000)
+	r.set(markId, json.dumps(value))
+	r.expire(markId, 10000)
+	return '0'
+
 @app.route('/position', methods=['POST'])
 def storePosition():
 	playerId = request.form['uuid']
@@ -40,6 +63,7 @@ def storePosition():
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	key = gHash + playerId
 	value = {
+		'type': 'p',
 		'uuid': playerId,
 		'x': x,
 		'vx': vx,
@@ -64,5 +88,5 @@ def storePosition():
 	return json.dumps(values)
 
 if __name__ == '__main__':
-	app.debug = False
+	app.debug = True
 	app.run(host='0.0.0.0')
