@@ -3,8 +3,15 @@ import uuid
 import redis
 import geohash
 import json
+import ConfigParser
 
-r = redis.StrictRedis(host='ec2-54-200-77-211.us-west-2.compute.amazonaws.com', port=6379, db=1)
+cfg = ConfigParser.ConfigParser()
+cfg.read('site.cfg')
+redisHost = cfg.get('redis', 'host')
+redisPort = cfg.get('redis', 'port')
+redisDb = cfg.get('redis', 'db')
+
+r = redis.StrictRedis(host=redisHost, port=redisPort, db=redisDb)
 
 app = Flask(__name__)
 
