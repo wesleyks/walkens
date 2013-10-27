@@ -64,10 +64,10 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				context.beginPath();
 				if (player.type == 'p') {
 					context.fillStyle = player.color;
-					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
+					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 15, 0, Math.PI * 2);
 				} else {
 					context.fillStyle = player.color;
-					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 5, 0, Math.PI * 2);
+					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 4, 0, Math.PI * 2);
 				}
 				context.fill();
 			}
@@ -191,7 +191,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			var clickX = e.offsetX - width / 2,
 				clickY = height / 2 - e.offsetY,
 				magnitude = Math.sqrt(clickY * clickY + clickX * clickX);
-			if (magnitude > 10) {
+			if (magnitude > 15) {
 				vx = 2 * maxVel * (clickX / magnitude) * (magnitude / width);
 				vy = 2 * maxVel * (clickY / magnitude) * (magnitude / height);
 			} else {
