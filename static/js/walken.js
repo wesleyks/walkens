@@ -1,51 +1,62 @@
-function Walken(canvas, canvasWidth, canvasHeight) {
+function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	var context = canvas.getContext('2d'),
 		width = canvasWidth,
 		height = canvasHeight,
 		grid = new Grid(context, width, height),
 		acceleration = 1.0,
 		maxVel = 3.0,
+		maxBounds = 100000.0,
 		px = 0.0,
 		vx = 0.0,
 		py = 0.0,
 		vy = 0.0,
 		playerList = [],
+		previousPlayerCount = 2,
 		uuid;
 	
 	function clamp(val, min, max) {
 		return Math.min(Math.max(val, min), max);
 	}
-
 	function update() {
 		vx *= 0.99;
 		vy *= 0.99;
 		px += vx;
 		py += vy;
+		if (Math.abs(px) > maxBounds || Math.abs(py) > maxBounds) {
+			px -= vx;
+			py -= vy;
+		}
 		for (var i = 0; i < playerList.length; i++) {
 			playerList[i].vx *= 0.98;
 			playerList[i].vy *= 0.98;
 			playerList[i].x += playerList[i].vx;
 			playerList[i].y += playerList[i].vy;
 		}
+		if (playerList.length > previousPlayerCount) {
+			//beacon.play();
+		}
+		previousPlayerCount = playerList.length;
 	}
 
 	function draw() {
 		context.clearRect(0, 0, width, height);
 		grid.drawBoard(px, py);
 		context.beginPath();
-		context.arc(width / 2, height / 2, 10, 0, Math.PI * 2);
-		context.stroke();
-		context.closePath();
+		context.fillStyle = '#5f5';
 		for (var i = 0; i < playerList.length; i++) {
 			var player = playerList[i];
 			if (player.uuid != uuid) {
 				context.beginPath();
 				context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
-				context.stroke();
-				context.closePath();
+				context.fill();
 			}
 		}
-		
+		context.closePath();
+		context.fillStyle = '#55f';
+		context.beginPath();
+		context.arc(width / 2, height / 2, 10, 0, Math.PI * 2);
+		context.fill();
+		context.closePath();
 	}
 
 	function run() {
@@ -75,12 +86,17 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 				playerList[i].y = parseFloat(playerList[i].y);
 			}
 		});
-		setTimeout(updateAndGetNearby, 60);
+		setTimeout(updateAndGetNearby, 100);
 	}
 
 	function start() {
 		run();
 		updateAndGetNearby();
+		
+		bg.addEventListener('ended', function() {
+			bg.play();
+		});
+		//bg.play();
 	}
 
 	function initialize(clientuuid) {

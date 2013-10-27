@@ -15,7 +15,7 @@ r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
 app = Flask(__name__)
 
-canvasWidth = 800
+canvasWidth = 400
 offsetX = float(canvasWidth) / 8.0
 canvasHeight = 400
 offsetY = float(canvasHeight) / 8.0
@@ -35,9 +35,9 @@ def storePosition():
 	vx = request.form['vx']
 	y = request.form['y']
 	vy = request.form['vy']
-	modifiedX = float(x) / 200.0
-	modifiedY = float(y) / 200.0
-	gHash = geohash.encode(modifiedX, modifiedY, 3)
+	modifiedX = float(x) / 1112.0
+	modifiedY = float(y) / 1112.0
+	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	key = gHash + playerId
 	value = {
 		'uuid': playerId,
@@ -47,13 +47,13 @@ def storePosition():
 		'vy': vy
 	}
 	r.set(key, playerId)
-	r.expire(key, 5)
+	r.expire(key, 2)
 	r.set(playerId, json.dumps(value))
-	r.expire(playerId, 5)
+	r.expire(playerId, 2)
 	gHashes = set()
-	for i in [-3, -2, -1, 0, 1, 2, 3]:
-		for j in [-3, -2, -1, 0, 1, 2, 3]:
-			subHash = geohash.encode((float(x) + i * offsetX) / 200.0, (float(y) + j * offsetY) / 200.0, 3)
+	for i in [-4, -3, -2, -1, 0, 1, 2, 3, 4]:
+		for j in [-4, -3, -2, -1, 0, 1, 2, 3, 4]:
+			subHash = geohash.encode((float(x) + i * offsetX) / 1112.0, (float(y) + j * offsetY) / 1112.0, 4)
 			gHashes.add(subHash)
 	keys = set()
 	for subHash in gHashes:
