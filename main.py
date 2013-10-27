@@ -11,7 +11,7 @@ redisHost = cfg.get('redis', 'host')
 redisPort = cfg.get('redis', 'port')
 redisDb = cfg.get('redis', 'db')
 
-r = redis.StrictRedis(host=redisHost, port=redisPort, db=redisDb)
+r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
 app = Flask(__name__)
 
@@ -44,5 +44,5 @@ def storePosition():
 	return json.dumps(values)
 
 if __name__ == '__main__':
-	app.debug = False
+	app.debug = True
 	app.run(host='0.0.0.0')
