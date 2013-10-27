@@ -51,7 +51,7 @@ def storeMark():
 	modifiedY = float(y) / 1112.0
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	value = {
-		'action': 'add'
+		'action': 'add',
 		'type': 'm',
 		'uuid': markId,
 		'x': x,
@@ -75,7 +75,7 @@ def storePosition():
 	modifiedY = float(y) / 1112.0
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	value = {
-		'action': action
+		'action': action,
 		'type': 'p',
 		'uuid': playerId,
 		'x': x,
