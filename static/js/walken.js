@@ -39,14 +39,18 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			px -= vx;
 			py -= vy;
 		}
+		var deleteList = [];
 		for (var i in objectList) {
 			//objectList[i].vx *= 0.99;
 			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
 			if (objectList[i].lastUpdated + 5000 < d.getTime()) {
-				delete objectList[i];
+				deleteList.push(i);
 			}
+		}
+		for (var i = 0; i < deleteList.length; i++) {
+			delete objectList[deleteList[i]];
 		}
 	}
 
