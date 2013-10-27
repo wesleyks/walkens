@@ -11,7 +11,7 @@ function Grid(canvasContext, canvasWidth, canvasHeight) {
 
 	function drawBoard(px, py) {
 		for (var x = -px % xSpacing - xSpacing; x <= width; x += xSpacing) {
-			for (var y = -py % ySpacing - ySpacing; y <= height; y += ySpacing) {
+			for (var y = py % ySpacing - ySpacing; y <= height; y += ySpacing) {
 				context.drawImage(gridCanvas, x, y);
 			}
 		}

@@ -22,6 +22,8 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 		px += vx;
 		py += vy;
 		for (var i = 0; i < playerList.length; i++) {
+			playerList[i].vx *= 0.98;
+			playerList[i].vy *= 0.98;
 			playerList[i].x += playerList[i].vx;
 			playerList[i].y += playerList[i].vy;
 		}
@@ -38,7 +40,7 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 			var player = playerList[i];
 			if (player.uuid != uuid) {
 				context.beginPath();
-				context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 + (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
+				context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 10, 0, Math.PI * 2);
 				context.stroke();
 				context.closePath();
 			}
@@ -47,8 +49,8 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 	}
 
 	function run() {
-		draw();
 		update();
+		draw();
 		requestAnimationFrame(run);
 	}
 
@@ -66,6 +68,12 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 			dataType: 'json'
 		}).done(function(data) {
 			playerList = data;
+			for (var i = 0; i < playerList.length; i++) {
+				playerList[i].vx = parseFloat(playerList[i].vx);
+				playerList[i].vy = parseFloat(playerList[i].vy);
+				playerList[i].x = parseFloat(playerList[i].x);
+				playerList[i].y = parseFloat(playerList[i].y);
+			}
 		});
 		setTimeout(updateAndGetNearby, 100);
 	}
@@ -83,13 +91,13 @@ function Walken(canvas, canvasWidth, canvasHeight) {
 					vx += -acceleration;
 					break;
 				case 38: // up
-					vy += -acceleration;
+					vy += acceleration;
 					break;
 				case 39: // right
 					vx += acceleration;
 					break;
 				case 40: // down
-					vy += acceleration;
+					vy += -acceleration;
 					break;
 			}
 			vy = clamp(vy, -maxVel, maxVel);
