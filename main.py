@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, Response
 import uuid
 import redis
 import geohash
@@ -20,6 +20,20 @@ offsetX = float(canvasWidth) / 8.0
 canvasHeight = 400
 offsetY = float(canvasHeight) / 8.0
 
+def hashesToSearch(x, y):
+	gHashes = set()
+	for i in [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]:
+		for j in [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]:
+			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 4)
+			gHashes.add(subHash)
+	return gHashes
+
+def event_stream(channels):
+	pubsub = r.pubsub();
+	pubsub.subscribe(channels);
+	for message in pubsub.listen():
+		yield 'data: %s\n\n' % message['data']
+
 @app.route('/')
 def index():
 	return render_template('index.html', width=canvasWidth, height=canvasHeight)
@@ -36,7 +50,6 @@ def storeMark():
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
-	key = gHash + markId
 	value = {
 		'type': 'm',
 		'uuid': markId,
@@ -45,10 +58,8 @@ def storeMark():
 		'vx': 0.0,
 		'vy': 0.0
 	}
-	r.set(key, markId)
-	r.expire(key, 10000)
-	r.set(markId, json.dumps(value))
-	r.expire(markId, 10000)
+	r.publish(gHash, json.dumps(value))
+	print value
 	return '0'
 
 @app.route('/position', methods=['POST'])
@@ -61,7 +72,6 @@ def storePosition():
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
-	key = gHash + playerId
 	value = {
 		'type': 'p',
 		'uuid': playerId,
@@ -70,23 +80,17 @@ def storePosition():
 		'y': y,
 		'vy': vy
 	}
-	r.set(key, playerId)
-	r.expire(key, 2)
-	r.set(playerId, json.dumps(value))
-	r.expire(playerId, 2)
-	gHashes = set()
-	for i in [-4, -3, -2, -1, 0, 1, 2, 3, 4]:
-		for j in [-4, -3, -2, -1, 0, 1, 2, 3, 4]:
-			subHash = geohash.encode((float(x) + i * offsetX) / 1112.0, (float(y) + j * offsetY) / 1112.0, 4)
-			gHashes.add(subHash)
-	keys = set()
-	for subHash in gHashes:
-		subKeys = r.keys(subHash + '*')
-		for k in subKeys:
-			keys.add(k)
-	values = [json.loads(r.get(r.get(k))) for k in keys]
-	return json.dumps(values)
+	r.publish(gHash, json.dumps(value))
+	return gHash
+
+@app.route('/events/<gHash>')
+def streamEvents(gHash):
+	coords = geohash.decode(gHash)
+	x = coords[0] * 1112.0
+	y = coords[1] * 1112.0
+	gHashes = hashesToSearch(x, y)
+	return Response(event_stream(gHashes), mimetype='text/event-stream')
 
 if __name__ == '__main__':
-	app.debug = True
+	app.debug = False
 	app.run(host='0.0.0.0')

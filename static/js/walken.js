@@ -10,8 +10,10 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		vx = 0.0,
 		py = 100 * Math.random() * (Math.random > 0 ? -1 : 1),
 		vy = 0.0,
-		playerList = [],
-		previousPlayerCount = 2,
+		objectList = {},
+		gHash = null,
+		gHashChanged = false,
+		streamSource = null,
 		uuid;
 	
 	function clamp(val, min, max) {
@@ -26,24 +28,20 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			px -= vx;
 			py -= vy;
 		}
-		for (var i = 0; i < playerList.length; i++) {
-			//playerList[i].vx *= 0.99;
-			//playerList[i].vy *= 0.99;
-			playerList[i].x += playerList[i].vx;
-			playerList[i].y += playerList[i].vy;
+		for (var i in objectList) {
+			//objectList[i].vx *= 0.99;
+			//objectList[i].vy *= 0.99;
+			objectList[i].x += objectList[i].vx;
+			objectList[i].y += objectList[i].vy;
 		}
-		if (playerList.length > previousPlayerCount) {
-			//beacon.play();
-		}
-		previousPlayerCount = playerList.length;
 	}
 
 	function draw() {
 		context.clearRect(0, 0, width, height);
 		grid.drawBoard(px, py);
 		context.beginPath();
-		for (var i = 0; i < playerList.length; i++) {
-			var player = playerList[i];
+		for (var i in objectList) {
+			var player = objectList[i];
 			if (player.uuid != uuid) {
 				context.beginPath();
 				if (player.type == 'p') {
@@ -70,7 +68,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		requestAnimationFrame(run);
 	}
 
-	function updateAndGetNearby() {
+	function updatePosition() {
 		$.ajax({
 			url: '/position',
 			type: 'POST',
@@ -81,17 +79,40 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				vx: vx,
 				vy: vy
 			},
-			dataType: 'json'
 		}).done(function(data) {
-			playerList = data;
-			for (var i = 0; i < playerList.length; i++) {
-				playerList[i].vx = parseFloat(playerList[i].vx);
-				playerList[i].vy = parseFloat(playerList[i].vy);
-				playerList[i].x = parseFloat(playerList[i].x);
-				playerList[i].y = parseFloat(playerList[i].y);
+			if (data != gHash) {
+				gHashChanged = true;
+				gHash = data;
 			}
 		});
-		setTimeout(updateAndGetNearby, 250);
+	}
+
+	function continuousUpdatePosition() {
+		updatePosition();
+		setTimeout(continuousUpdatePosition, 2000);
+	}
+
+	function streamObjects() {
+		if (gHash) {
+			if (!streamSource) {
+				streamSource = new EventSource('/events/' + gHash);
+			} else {
+				streamSource.close();
+				streamSource = new EventSource('/events/' + gHash);
+			}
+			streamSource.onmessage = function(e) {
+				var parsedData = $.parseJSON(e.data);
+				if (typeof parsedData == 'object') {
+					parsedData.x = parseFloat(parsedData.x);
+					parsedData.y = parseFloat(parsedData.y);
+					parsedData.vx = parseFloat(parsedData.vx);
+					parsedData.vy = parseFloat(parsedData.vy);
+					objectList[parsedData.uuid] = parsedData;
+					console.log(parsedData);
+				}
+			}
+		}
+		setTimeout(streamObjects, 3000);
 	}
 
 	function leaveMark() {
@@ -107,11 +128,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function start() {
 		run();
-		updateAndGetNearby();
-		
-		bg.addEventListener('ended', function() {
-			bg.play();
-		});
+		continuousUpdatePosition();
+		streamObjects();
 		//bg.play();
 	}
 
@@ -149,6 +167,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				vx = 0;
 				vy = 0;
 			}
+			updatePosition();
 		});
 	}
 	this.start = start;
