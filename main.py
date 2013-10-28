@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, Response
+from flask.ext.assets import Environment, Bundle
 import uuid
 import redis
 import geohash
@@ -15,6 +16,10 @@ redisDb = cfg.get('redis', 'db')
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
 app = Flask(__name__)
+assets = Environment(app)
+
+js = Bundle('js/walken.js', 'js/grid.js', 'js/main.js', filters='jsmin', output='js/packed.js')
+assets.register('js_all', js)
 
 canvasWidth = 400
 offsetX = float(canvasWidth) / 8.0
@@ -114,5 +119,5 @@ def streamEvents(gHash):
 	return Response(event_stream(gHashes), mimetype='text/event-stream')
 
 if __name__ == '__main__':
-	app.debug = False
+	app.debug = True
 	app.run(host='0.0.0.0')

@@ -1,4 +1,5 @@
 $(document).ready(function() {
+	$('div').hide().fadeIn();
 	var canvas = $('#game-canvas'),
 		canvasWidth = canvas.attr('width'),
 		canvasHeight = canvas.attr('height'),

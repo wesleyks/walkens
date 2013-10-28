@@ -6,18 +6,17 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		acceleration = 1.0,
 		maxVel = 3.0,
 		maxBounds = 100000.0,
-		px = 100 * Math.random() * (Math.random > 0 ? -1 : 1),
+		px = 1000 * Math.random() * (Math.random > 0 ? -1 : 1),
 		vx = 0.0,
-		py = 100 * Math.random() * (Math.random > 0 ? -1 : 1),
+		py = 1000 * Math.random() * (Math.random > 0 ? -1 : 1),
 		vy = 0.0,
 		objectList = {},
 		gHash = null,
-		gHashChanged = false,
 		streamSource = null,
 		uuid = null,
 		color = null;
 
-	function get_random_color() {
+	function getRandomColor() {
 		var letters = '0123456789ABCDEF'.split('');
 		var color = '#';
 		for (var i = 0; i < 6; i++ ) {
@@ -30,6 +29,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		return Math.min(Math.max(val, min), max);
 	}
 	function update() {
+		var neighborCount = 0;
 		//vx *= 0.99;
 		//vy *= 0.99;
 		px += vx;
@@ -41,17 +41,21 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		var deleteList = [],
 			d = new Date();
 		for (var i in objectList) {
+			if (objectList[i].type == 'p' && objectList[i].uuid != uuid) {
+				neighborCount++;
+			}
 			//objectList[i].vx *= 0.99;
 			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
-			if (objectList[i].lastUpdated + 100000 < d.getTime()) {
+			if (objectList[i].lastUpdated + 10000 < d.getTime()) {
 				deleteList.push(i);
 			}
 		}
 		for (var i = 0; i < deleteList.length; i++) {
 			delete objectList[deleteList[i]];
 		}
+		document.title = 'Walkens | ' + neighborCount + ' nearby';
 	}
 
 	function draw() {
@@ -105,7 +109,6 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			async: (action == 'add' ? true : false)
 		}).done(function(data) {
 			if (data != gHash) {
-				gHashChanged = true;
 				gHash = data;
 			}
 		});
@@ -164,7 +167,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		run();
 		continuousUpdatePosition('add');
 		streamObjects();
-		color = get_random_color();
+		color = getRandomColor();
 		//bg.play();
 		window.onbeforeunload = function() {
 			updatePosition('remove');
