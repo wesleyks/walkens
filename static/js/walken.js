@@ -14,8 +14,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		gHash = null,
 		gHashChanged = false,
 		streamSource = null,
-		color,
-		uuid;
+		uuid = null,
+		color = null;
 
 	function get_random_color() {
 		var letters = '0123456789ABCDEF'.split('');
@@ -45,7 +45,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
-			if (objectList[i].lastUpdated + 5000 < d.getTime()) {
+			if (objectList[i].lastUpdated + 100000 < d.getTime()) {
 				deleteList.push(i);
 			}
 		}
@@ -87,6 +87,9 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	}
 
 	function updatePosition(action) {
+		if (!uuid || !color) {
+			return;
+		}
 		$.ajax({
 			url: '/position',
 			type: 'POST',
@@ -110,38 +113,42 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function continuousUpdatePosition() {
 		updatePosition('add');
-		setTimeout(continuousUpdatePosition, 1000);
+		setTimeout(continuousUpdatePosition, 3000);
+	}
+
+	function handleMessage(e) {
+		var parsedData = $.parseJSON(e.data);
+		if (typeof parsedData == 'object') {
+			if (parsedData.action == 'add') {
+				var d = new Date();
+				parsedData.lastUpdated = d.getTime();
+				parsedData.x = parseFloat(parsedData.x);
+				parsedData.y = parseFloat(parsedData.y);
+				parsedData.vx = parseFloat(parsedData.vx);
+				parsedData.vy = parseFloat(parsedData.vy);
+				objectList[parsedData.uuid] = parsedData;
+			} else if (parsedData.action == 'remove'){
+				delete objectList[parsedData.uuid];
+			} else if (parsedData.action == 'close'){
+				streamSource.close();
+				streamSource = new EventSource('/events/' + gHash);
+				streamSource.onmessage = handleMessage;
+			}
+		}
 	}
 
 	function streamObjects() {
-		if (gHash) {
-			if (!streamSource) {
-				streamSource = new EventSource('/events/' + gHash);
-			} else {
-				streamSource.close();
-				streamSource = new EventSource('/events/' + gHash);
-			}
-			streamSource.onmessage = function(e) {
-				var parsedData = $.parseJSON(e.data);
-				if (typeof parsedData == 'object') {
-					if (parsedData.action == 'add') {
-						var d = new Date();
-						parsedData.lastUpdated = d.getTime();
-						parsedData.x = parseFloat(parsedData.x);
-						parsedData.y = parseFloat(parsedData.y);
-						parsedData.vx = parseFloat(parsedData.vx);
-						parsedData.vy = parseFloat(parsedData.vy);
-						objectList[parsedData.uuid] = parsedData;
-					} else {
-						delete objectList[parsedData.uuid];
-					}
-				}
-			}
+		if (gHash && !streamSource) {
+			streamSource = new EventSource('/events/' + gHash);
+			streamSource.onmessage = handleMessage;
 		}
-		setTimeout(streamObjects, 3000);
+		setTimeout(streamObjects, 1000);
 	}
 
 	function leaveMark() {
+		if (!color || !uuid) {
+			return;
+		}
 		$.ajax({
 			url: '/mark',
 			type: 'POST',

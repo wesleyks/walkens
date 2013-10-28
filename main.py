@@ -4,6 +4,7 @@ import redis
 import geohash
 import json
 import ConfigParser
+import time
 
 cfg = ConfigParser.ConfigParser()
 cfg.read('site.cfg')
@@ -38,8 +39,12 @@ def event_stream(channels):
 	data = [r.get(k) for k in keys]
 	for d in data:
 		yield 'data: %s\n\n' % d
+	timeStart = time.time()
 	for message in pubsub.listen():
 		yield 'data: %s\n\n' % message['data']
+		if (time.time() - timeStart) > 3.0:
+			break
+	yield 'data: {"action": "close"}\n\n'
 
 @app.route('/')
 def index():
