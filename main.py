@@ -6,6 +6,11 @@ import geohash
 import json
 import ConfigParser
 import time
+import sys
+import signal
+
+class TimeoutException(Exception):
+	pass
 
 cfg = ConfigParser.ConfigParser()
 cfg.read('site.cfg')
@@ -34,7 +39,9 @@ def hashesToSearch(x, y):
 			gHashes.add(subHash)
 	return gHashes
 
-def event_stream(channels):
+def eventStream(channels):
+	def timeoutHandler(signum, frame):
+		raise TimeoutException()
 	pubsub = r.pubsub()
 	pubsub.subscribe(channels)
 	keys = set()
@@ -44,12 +51,14 @@ def event_stream(channels):
 	data = [r.get(k) for k in keys]
 	for d in data:
 		yield 'data: %s\n\n' % d
-	timeStart = time.time()
-	for message in pubsub.listen():
-		yield 'data: %s\n\n' % message['data']
-		if (time.time() - timeStart) > 3.0:
-			break
-	yield 'data: {"action": "close"}\n\n'
+	
+	signal.signal(signal.SIGALRM, timeoutHandler)
+	signal.alarm(3)
+	try:
+		for message in pubsub.listen():
+			yield 'data: %s\n\n' % message['data']
+	except TimeoutException:
+		yield 'data: {"action": "close"}\n\n'
 
 @app.route('/')
 def index():
@@ -116,7 +125,7 @@ def streamEvents(gHash):
 	x = coords[0] * 1112.0
 	y = coords[1] * 1112.0
 	gHashes = hashesToSearch(x, y)
-	return Response(event_stream(gHashes), mimetype='text/event-stream')
+	return Response(eventStream(gHashes), mimetype='text/event-stream')
 
 if __name__ == '__main__':
 	app.debug = True
