@@ -55,7 +55,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		for (var i = 0; i < deleteList.length; i++) {
 			delete objectList[deleteList[i]];
 		}
-		document.title = 'Walkens | ' + neighborCount + ' nearby';
+		document.title = neighborCount + ' nearby';
 	}
 
 	function draw() {
