@@ -20,7 +20,8 @@ redisDb = cfg.get('redis', 'db')
 production = cfg.get('server', 'production') == 'True'
 logfile = cfg.get('server', 'logfile')
 
-logging.basicConfig(filename=logfile,level=logging.INFO)
+LOGFORMAT = '%(asctime)s %(clientip)s data: %(message)s'
+logging.basicConfig(filename=logfile,level=logging.INFO, format=LOGFORMAT)
 
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
