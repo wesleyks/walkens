@@ -20,7 +20,7 @@ redisDb = cfg.get('redis', 'db')
 production = cfg.get('server', 'production') == 'True'
 logfile = cfg.get('server', 'logfile')
 
-LOGFORMAT = '%(asctime)s %(clientip)s data: %(message)s'
+LOGFORMAT = '%(asctime)s %(clientip)s %(message)s'
 logging.basicConfig(filename=logfile,level=logging.INFO, format=LOGFORMAT)
 
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
@@ -98,7 +98,7 @@ def storeMark():
 	r.set(key, valueJson)
 	r.expire(key, 1000)
 	if production:
-		logging.info(valueJson)
+		logging.info('data: ' + valueJson)
 	return '0'
 
 @app.route('/position', methods=['POST'])
@@ -126,7 +126,7 @@ def storePosition():
 	valueJson = json.dumps(value)
 	r.publish(gHash, valueJson)
 	if production:
-		logging.info(valueJson)
+		logging.info('data: ' + valueJson)
 	return gHash
 
 @app.route('/events/<gHash>')
