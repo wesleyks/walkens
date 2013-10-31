@@ -22,7 +22,7 @@ logfile = cfg.get('server', 'logfile')
 
 logging.basicConfig(filename=logfile,level=logging.INFO)
 
-r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
+r = redis.Redis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
 app = Flask(__name__)
 assets = Environment(app)
