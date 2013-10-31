@@ -3,3 +3,4 @@ main.pyc
 walkens.pyc
 static/.webassets-cache/*
 actions.log
+static/js/packed.js
