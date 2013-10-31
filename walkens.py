@@ -5,9 +5,8 @@ import redis
 import geohash
 import json
 import ConfigParser
-import time
-import sys
 import signal
+import logging
 
 class TimeoutException(Exception):
 	pass
@@ -17,6 +16,12 @@ cfg.read('site.cfg')
 redisHost = cfg.get('redis', 'host')
 redisPort = cfg.get('redis', 'port')
 redisDb = cfg.get('redis', 'db')
+
+production = cfg.get('server', 'production') == 'True'
+logfile = cfg.get('server', 'logfile')
+
+LOGFORMAT = '%(asctime)s %(clientip)s data: %(message)s'
+logging.basicConfig(filename=logfile,level=logging.INFO, format=LOGFORMAT)
 
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
@@ -62,7 +67,7 @@ def eventStream(channels):
 
 @app.route('/')
 def index():
-	return render_template('index.html', width=canvasWidth, height=canvasHeight)
+	return render_template('index.html', width=canvasWidth, height=canvasHeight, production=production)
 
 @app.route('/uuid')
 def genUUID():
@@ -88,10 +93,12 @@ def storeMark():
 		'vx': 0.0,
 		'vy': 0.0
 	}
-	r.publish(gHash, json.dumps(value))
-	r.set(key, json.dumps(value))
-	r.expires(key, 1000)
-	print value
+	valueJson = json.dumps(value)
+	r.publish(gHash, valueJson)
+	r.set(key, valueJson)
+	r.expire(key, 1000)
+	if production:
+		logging.info(valueJson)
 	return '0'
 
 @app.route('/position', methods=['POST'])
@@ -116,7 +123,10 @@ def storePosition():
 		'y': y,
 		'vy': vy
 	}
-	r.publish(gHash, json.dumps(value))
+	valueJson = json.dumps(value)
+	r.publish(gHash, valueJson)
+	if production:
+		logging.info(valueJson)
 	return gHash
 
 @app.route('/events/<gHash>')

@@ -5,7 +5,7 @@ function update(){var neighborCount=0;px+=vx;py+=vy;if(Math.abs(px)>maxBounds||M
 var deleteList=[],d=new Date();for(var i in objectList){if(objectList[i].type=='p'&&objectList[i].uuid!=uuid){neighborCount++;}
 objectList[i].x+=objectList[i].vx;objectList[i].y+=objectList[i].vy;if(objectList[i].lastUpdated+10000<d.getTime()){deleteList.push(i);}}
 for(var i=0;i<deleteList.length;i++){delete objectList[deleteList[i]];}
-document.title='Walkens | '+neighborCount+' nearby';}
+document.title=neighborCount+' nearby';}
 function draw(){context.clearRect(0,0,width,height);grid.drawBoard(px,py);context.beginPath();for(var i in objectList){var player=objectList[i];if(player.uuid!=uuid){context.beginPath();if(player.type=='p'){context.fillStyle=player.color;context.arc(width/2+(parseFloat(player.x)-px),height/2-(parseFloat(player.y)-py),15,0,Math.PI*2);}else{context.fillStyle=player.color;context.arc(width/2+(parseFloat(player.x)-px),height/2-(parseFloat(player.y)-py),4,0,Math.PI*2);}
 context.fill();}}
 context.closePath();context.fillStyle=color;context.beginPath();context.arc(width/2,height/2,15,0,Math.PI*2);context.fill();context.closePath();}
