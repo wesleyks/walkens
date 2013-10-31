@@ -109,12 +109,10 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			async: (action == 'add' ? true : false)
 		}).done(function(data) {
 			if (data != gHash) {
-				console.log('redo');
 				gHash = data;
 				if (streamSource != null) {
-					streamSource.close();
-				} else {
 					updatePosition('closeStream');
+					streamSource.close();
 				}
 				streamSource = new EventSource('/events/' + gHash + '/' + uuid);
 				streamSource.onmessage = handleMessage;

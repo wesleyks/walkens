@@ -29,14 +29,14 @@ js = Bundle('js/walken.js', 'js/grid.js', 'js/main.js', filters='jsmin', output=
 assets.register('js_all', js)
 
 canvasWidth = 400
-offsetX = float(canvasWidth) / 8.0
+offsetX = float(canvasWidth) / 2.0
 canvasHeight = 400
-offsetY = float(canvasHeight) / 8.0
+offsetY = float(canvasHeight) / 2.0
 
 def hashesToSearch(x, y):
 	gHashes = set()
-	for i in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
-		for j in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
+	for i in [-8.0, -4.0, 0.0, 4.0, 8.0]:
+		for j in [-8.0, -4.0, 0.0, 4.0, 8.0]:
 			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 3)
 			gHashes.add(subHash)
 	return gHashes
@@ -57,7 +57,6 @@ def eventStream(channels, userUuid):
 			messageData = json.loads(message['data'])
 			if (messageData[u'action'] == u'closeStream' or messageData[u'action'] == u'remove') and messageData[u'uuid'] == userUuid:
 				break
-
 		yield 'data: %s\n\n' % message['data']
 	yield 'data: 0\n\n'
 

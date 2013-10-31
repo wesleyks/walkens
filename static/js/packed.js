@@ -11,7 +11,7 @@ context.fill();}}
 context.closePath();context.fillStyle=color;context.beginPath();context.arc(width/2,height/2,15,0,Math.PI*2);context.fill();context.closePath();}
 function run(){update();draw();requestAnimationFrame(run);}
 function updatePosition(action){if(!uuid||!color){return;}
-$.ajax({url:'/position',type:'POST',data:{action:action,uuid:uuid,color:color,x:px,y:py,vx:vx,vy:vy},async:(action=='add'?true:false)}).done(function(data){if(data!=gHash){console.log('redo');gHash=data;if(streamSource!=null){streamSource.close();}else{updatePosition('closeStream');}
+$.ajax({url:'/position',type:'POST',data:{action:action,uuid:uuid,color:color,x:px,y:py,vx:vx,vy:vy},async:(action=='add'?true:false)}).done(function(data){if(data!=gHash){gHash=data;if(streamSource!=null){updatePosition('closeStream');streamSource.close();}
 streamSource=new EventSource('/events/'+gHash+'/'+uuid);streamSource.onmessage=handleMessage;}});}
 function continuousUpdatePosition(){updatePosition('add');setTimeout(continuousUpdatePosition,3000);}
 function handleMessage(e){var parsedData=$.parseJSON(e.data);if(typeof parsedData=='object'){if(parsedData.action=='add'){var d=new Date();parsedData.lastUpdated=d.getTime();parsedData.x=parseFloat(parsedData.x);parsedData.y=parseFloat(parsedData.y);parsedData.vx=parseFloat(parsedData.vx);parsedData.vy=parseFloat(parsedData.vy);objectList[parsedData.uuid]=parsedData;}else if(parsedData.action=='remove'){delete objectList[parsedData.uuid];}}}
