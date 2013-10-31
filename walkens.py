@@ -88,10 +88,12 @@ def storeMark():
 		'vx': 0.0,
 		'vy': 0.0
 	}
-	r.publish(gHash, json.dumps(value))
+	valueJson = json.dumps(value)
+	r.publish(gHash, json.dumps(valueJson))
 	r.set(key, json.dumps(value))
 	r.expires(key, 1000)
-	print value
+	if production:
+		app.logger.info(valueJson)
 	return '0'
 
 @app.route('/position', methods=['POST'])
@@ -116,7 +118,10 @@ def storePosition():
 		'y': y,
 		'vy': vy
 	}
-	r.publish(gHash, json.dumps(value))
+	valueJson = json.dumps(value)
+	r.publish(gHash, json.dumps(valueJson))
+	if production:
+		app.logger.info(valueJson)
 	return gHash
 
 @app.route('/events/<gHash>')
