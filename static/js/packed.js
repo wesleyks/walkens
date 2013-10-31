@@ -11,14 +11,13 @@ context.fill();}}
 context.closePath();context.fillStyle=color;context.beginPath();context.arc(width/2,height/2,15,0,Math.PI*2);context.fill();context.closePath();}
 function run(){update();draw();requestAnimationFrame(run);}
 function updatePosition(action){if(!uuid||!color){return;}
-$.ajax({url:'/position',type:'POST',data:{action:action,uuid:uuid,color:color,x:px,y:py,vx:vx,vy:vy},async:(action=='add'?true:false)}).done(function(data){if(data!=gHash){gHash=data;}});}
+$.ajax({url:'/position',type:'POST',data:{action:action,uuid:uuid,color:color,x:px,y:py,vx:vx,vy:vy},async:(action=='add'?true:false)}).done(function(data){if(data!=gHash){console.log('redo');gHash=data;if(streamSource!=null){streamSource.close();}else{updatePosition('closeStream');}
+streamSource=new EventSource('/events/'+gHash+'/'+uuid);streamSource.onmessage=handleMessage;}});}
 function continuousUpdatePosition(){updatePosition('add');setTimeout(continuousUpdatePosition,3000);}
-function handleMessage(e){var parsedData=$.parseJSON(e.data);if(typeof parsedData=='object'){if(parsedData.action=='add'){var d=new Date();parsedData.lastUpdated=d.getTime();parsedData.x=parseFloat(parsedData.x);parsedData.y=parseFloat(parsedData.y);parsedData.vx=parseFloat(parsedData.vx);parsedData.vy=parseFloat(parsedData.vy);objectList[parsedData.uuid]=parsedData;}else if(parsedData.action=='remove'){delete objectList[parsedData.uuid];}else if(parsedData.action=='close'){streamSource.close();streamSource=new EventSource('/events/'+gHash);streamSource.onmessage=handleMessage;}}}
-function streamObjects(){if(gHash&&!streamSource){streamSource=new EventSource('/events/'+gHash);streamSource.onmessage=handleMessage;}
-setTimeout(streamObjects,1000);}
+function handleMessage(e){var parsedData=$.parseJSON(e.data);if(typeof parsedData=='object'){if(parsedData.action=='add'){var d=new Date();parsedData.lastUpdated=d.getTime();parsedData.x=parseFloat(parsedData.x);parsedData.y=parseFloat(parsedData.y);parsedData.vx=parseFloat(parsedData.vx);parsedData.vy=parseFloat(parsedData.vy);objectList[parsedData.uuid]=parsedData;}else if(parsedData.action=='remove'){delete objectList[parsedData.uuid];}}}
 function leaveMark(){if(!color||!uuid){return;}
 $.ajax({url:'/mark',type:'POST',data:{x:px,y:py,color:color}});}
-function start(){run();continuousUpdatePosition('add');streamObjects();color=getRandomColor();window.onbeforeunload=function(){updatePosition('remove');};}
+function start(){run();continuousUpdatePosition('add');color=getRandomColor();window.onbeforeunload=function(){updatePosition('remove');};}
 function initialize(clientuuid){uuid=clientuuid;$(document).keydown(function(e){switch(e.which){case 37: vx+=-acceleration;break;case 38: vy+=acceleration;break;case 39: vx+=acceleration;break;case 40: vy+=-acceleration;break;}
 vy=clamp(vy,-maxVel,maxVel);vx=clamp(vx,-maxVel,maxVel);});$('#mark-button').click(function(){leaveMark();});$(canvas).click(function(e){var clickX=e.offsetX-width/2,clickY=height/2-e.offsetY,magnitude=Math.sqrt(clickY*clickY+clickX*clickX);if(magnitude>15){vx=2*maxVel*(clickX/magnitude)*(magnitude/width);vy=2*maxVel*(clickY/magnitude)*(magnitude/height);}else{vx=0;vy=0;}
 updatePosition('add');});}
