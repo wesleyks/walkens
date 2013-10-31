@@ -35,8 +35,8 @@ offsetY = float(canvasHeight) / 2.0
 
 def hashesToSearch(x, y):
 	gHashes = set()
-	for i in [-8.0, -4.0, 0.0, 4.0, 8.0]:
-		for j in [-8.0, -4.0, 0.0, 4.0, 8.0]:
+	for i in [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]:
+		for j in [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]:
 			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 3)
 			gHashes.add(subHash)
 	return gHashes
