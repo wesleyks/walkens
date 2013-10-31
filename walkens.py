@@ -5,11 +5,7 @@ import redis
 import geohash
 import json
 import ConfigParser
-import signal
 import logging
-
-class TimeoutException(Exception):
-	pass
 
 cfg = ConfigParser.ConfigParser()
 cfg.read('site.cfg')
@@ -20,8 +16,9 @@ redisDb = cfg.get('redis', 'db')
 production = cfg.get('server', 'production') == 'True'
 logfile = cfg.get('server', 'logfile')
 
-LOGFORMAT = '%(asctime)s %(message)s'
-logging.basicConfig(filename=logfile,level=logging.INFO, format=LOGFORMAT)
+if production:
+	LOGFORMAT = '%(asctime)s %(message)s'
+	logging.basicConfig(filename=logfile,level=logging.INFO, format=LOGFORMAT)
 
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
@@ -32,21 +29,19 @@ js = Bundle('js/walken.js', 'js/grid.js', 'js/main.js', filters='jsmin', output=
 assets.register('js_all', js)
 
 canvasWidth = 400
-offsetX = float(canvasWidth) / 8.0
+offsetX = float(canvasWidth) / 2.0
 canvasHeight = 400
-offsetY = float(canvasHeight) / 8.0
+offsetY = float(canvasHeight) / 2.0
 
 def hashesToSearch(x, y):
 	gHashes = set()
-	for i in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
-		for j in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
-			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 4)
+	for i in [-8.0, -4.0, 0.0, 4.0, 8.0]:
+		for j in [-8.0, -4.0, 0.0, 4.0, 8.0]:
+			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 3)
 			gHashes.add(subHash)
 	return gHashes
 
-def eventStream(channels):
-	def timeoutHandler(signum, frame):
-		raise TimeoutException()
+def eventStream(channels, userUuid):
 	pubsub = r.pubsub()
 	pubsub.subscribe(channels)
 	keys = set()
@@ -57,13 +52,13 @@ def eventStream(channels):
 	for d in data:
 		yield 'data: %s\n\n' % d
 	
-	signal.signal(signal.SIGALRM, timeoutHandler)
-	signal.alarm(3)
-	try:
-		for message in pubsub.listen():
-			yield 'data: %s\n\n' % message['data']
-	except TimeoutException:
-		yield 'data: {"action": "close"}\n\n'
+	for message in pubsub.listen():
+		if type(message['data']) != long:
+			messageData = json.loads(message['data'])
+			if (messageData[u'action'] == u'closeStream' or messageData[u'action'] == u'remove') and messageData[u'uuid'] == userUuid:
+				break
+		yield 'data: %s\n\n' % message['data']
+	yield 'data: 0\n\n'
 
 @app.route('/')
 def index():
@@ -81,7 +76,7 @@ def storeMark():
 	y = request.form['y']
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
-	gHash = geohash.encode(modifiedX, modifiedY, 4)
+	gHash = geohash.encode(modifiedX, modifiedY, 3)
 	key = gHash + markId
 	value = {
 		'action': 'add',
@@ -112,7 +107,7 @@ def storePosition():
 	action = request.form['action']
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
-	gHash = geohash.encode(modifiedX, modifiedY, 4)
+	gHash = geohash.encode(modifiedX, modifiedY, 3)
 	value = {
 		'action': action,
 		'type': 'p',
@@ -129,13 +124,13 @@ def storePosition():
 		logging.info('data: ' + valueJson)
 	return gHash
 
-@app.route('/events/<gHash>')
-def streamEvents(gHash):
+@app.route('/events/<gHash>/<userUuid>')
+def streamEvents(gHash, userUuid):
 	coords = geohash.decode(gHash)
 	x = coords[0] * 1112.0
 	y = coords[1] * 1112.0
 	gHashes = hashesToSearch(x, y)
-	return Response(eventStream(gHashes), mimetype='text/event-stream')
+	return Response(eventStream(gHashes, userUuid), mimetype='text/event-stream')
 
 if __name__ == '__main__':
 	app.debug = True

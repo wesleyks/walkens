@@ -110,6 +110,12 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		}).done(function(data) {
 			if (data != gHash) {
 				gHash = data;
+				if (streamSource != null) {
+					updatePosition('closeStream');
+					streamSource.close();
+				}
+				streamSource = new EventSource('/events/' + gHash + '/' + uuid);
+				streamSource.onmessage = handleMessage;
 			}
 		});
 	}
@@ -132,20 +138,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				objectList[parsedData.uuid] = parsedData;
 			} else if (parsedData.action == 'remove'){
 				delete objectList[parsedData.uuid];
-			} else if (parsedData.action == 'close'){
-				streamSource.close();
-				streamSource = new EventSource('/events/' + gHash);
-				streamSource.onmessage = handleMessage;
 			}
 		}
-	}
-
-	function streamObjects() {
-		if (gHash && !streamSource) {
-			streamSource = new EventSource('/events/' + gHash);
-			streamSource.onmessage = handleMessage;
-		}
-		setTimeout(streamObjects, 1000);
 	}
 
 	function leaveMark() {
@@ -166,7 +160,6 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	function start() {
 		run();
 		continuousUpdatePosition('add');
-		streamObjects();
 		color = getRandomColor();
 		//bg.play();
 		window.onbeforeunload = function() {
