@@ -22,7 +22,7 @@ logfile = cfg.get('server', 'logfile')
 
 logging.basicConfig(filename=logfile,level=logging.INFO)
 
-r = redis.Redis(host=redisHost, port=int(redisPort), db=int(redisDb))
+r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
 app = Flask(__name__)
 assets = Environment(app)
@@ -95,7 +95,7 @@ def storeMark():
 	valueJson = json.dumps(value)
 	r.publish(gHash, json.dumps(valueJson))
 	r.set(key, json.dumps(value))
-	r.expires(key, 1000)
+	r.expire(key, 1000)
 	if production:
 		logging.info(valueJson)
 	return '0'
