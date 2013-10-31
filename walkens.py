@@ -6,7 +6,7 @@ import geohash
 import json
 import ConfigParser
 import signal
-import logging
+import twiggy
 
 class TimeoutException(Exception):
 	pass
@@ -20,7 +20,7 @@ redisDb = cfg.get('redis', 'db')
 production = cfg.get('server', 'production') == 'True'
 logfile = cfg.get('server', 'logfile')
 
-logging.basicConfig(filename=logfile,level=logging.INFO)
+twiggy.quickSetup(min_level=twiggy.levels.INFO, file=logfile, msg_buffer=0)
 
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
@@ -97,7 +97,7 @@ def storeMark():
 	r.set(key, json.dumps(value))
 	r.expire(key, 1000)
 	if production:
-		logging.info(valueJson)
+		twiggy.log.info(valueJson)
 	return '0'
 
 @app.route('/position', methods=['POST'])
@@ -125,7 +125,7 @@ def storePosition():
 	valueJson = json.dumps(value)
 	r.publish(gHash, json.dumps(valueJson))
 	if production:
-		logging.info(valueJson)
+		twiggy.log.info(valueJson)
 	return gHash
 
 @app.route('/events/<gHash>')
