@@ -29,14 +29,14 @@ js = Bundle('js/walken.js', 'js/grid.js', 'js/main.js', filters='jsmin', output=
 assets.register('js_all', js)
 
 canvasWidth = 400
-offsetX = float(canvasWidth) / 2.0
+offsetX = float(canvasWidth) / 4.0
 canvasHeight = 400
-offsetY = float(canvasHeight) / 2.0
+offsetY = float(canvasHeight) / 4.0
 
 def hashesToSearch(x, y):
 	gHashes = set()
-	for i in [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]:
-		for j in [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]:
+	for i in [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]:
+		for j in [-4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0]:
 			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 3)
 			gHashes.add(subHash)
 	return gHashes
