@@ -94,7 +94,7 @@ def storeMark():
 	}
 	valueJson = json.dumps(value)
 	r.publish(gHash, valueJson)
-	r.set(key, json.dumps(value))
+	r.set(key, valueJson)
 	r.expire(key, 1000)
 	if production:
 		logging.info(valueJson)
