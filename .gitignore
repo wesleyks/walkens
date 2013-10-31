@@ -1,3 +1,4 @@
 site.cfg
 main.pyc
 static/.webassets-cache/*
+actions.log

@@ -93,7 +93,7 @@ def storeMark():
 		'vy': 0.0
 	}
 	valueJson = json.dumps(value)
-	r.publish(gHash, json.dumps(valueJson))
+	r.publish(gHash, valueJson)
 	r.set(key, json.dumps(value))
 	r.expire(key, 1000)
 	if production:
@@ -123,7 +123,7 @@ def storePosition():
 		'vy': vy
 	}
 	valueJson = json.dumps(value)
-	r.publish(gHash, json.dumps(valueJson))
+	r.publish(gHash, valueJson)
 	if production:
 		logging.info(valueJson)
 	return gHash
