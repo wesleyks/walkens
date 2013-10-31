@@ -6,6 +6,7 @@ import geohash
 import json
 import ConfigParser
 import signal
+import logging
 
 class TimeoutException(Exception):
 	pass
@@ -17,6 +18,9 @@ redisPort = cfg.get('redis', 'port')
 redisDb = cfg.get('redis', 'db')
 
 production = cfg.get('server', 'production') == 'True'
+logfile = cfg.get('server', 'logfile')
+
+logging.basicConfig(filename=logfile,level=logging.INFO)
 
 r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 
@@ -93,7 +97,7 @@ def storeMark():
 	r.set(key, json.dumps(value))
 	r.expires(key, 1000)
 	if production:
-		app.logger.info(valueJson)
+		logging.info(valueJson)
 	return '0'
 
 @app.route('/position', methods=['POST'])
@@ -121,7 +125,7 @@ def storePosition():
 	valueJson = json.dumps(value)
 	r.publish(gHash, json.dumps(valueJson))
 	if production:
-		app.logger.info(valueJson)
+		logging.info(valueJson)
 	return gHash
 
 @app.route('/events/<gHash>')
