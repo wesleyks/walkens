@@ -49,9 +49,9 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
 			/// TODO: implement ttl for marker objects
-			/*if (objectList[i].lastUpdated + 10000 < d.getTime()) {
+			if (objectList[i].type == 'p' && (objectList[i].lastUpdated + 10000 < d.getTime())) {
 				deleteList.push(i);
-			}*/
+			}
 		}
 		for (var i = 0; i < deleteList.length; i++) {
 			delete objectList[deleteList[i]];
