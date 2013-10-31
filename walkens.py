@@ -37,7 +37,7 @@ def hashesToSearch(x, y):
 	gHashes = set()
 	for i in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
 		for j in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
-			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 3)
+			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 4)
 			gHashes.add(subHash)
 	return gHashes
 
@@ -76,7 +76,7 @@ def storeMark():
 	y = request.form['y']
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
-	gHash = geohash.encode(modifiedX, modifiedY, 3)
+	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	key = gHash + markId
 	value = {
 		'action': 'add',
@@ -107,7 +107,7 @@ def storePosition():
 	action = request.form['action']
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
-	gHash = geohash.encode(modifiedX, modifiedY, 3)
+	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	value = {
 		'action': action,
 		'type': 'p',
