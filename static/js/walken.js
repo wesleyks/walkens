@@ -48,9 +48,10 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
-			if (objectList[i].lastUpdated + 10000 < d.getTime()) {
+			/// TODO: implement ttl for marker objects
+			/*if (objectList[i].lastUpdated + 10000 < d.getTime()) {
 				deleteList.push(i);
-			}
+			}*/
 		}
 		for (var i = 0; i < deleteList.length; i++) {
 			delete objectList[deleteList[i]];
@@ -122,7 +123,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function continuousUpdatePosition() {
 		updatePosition('add');
-		setTimeout(continuousUpdatePosition, 3000);
+		setTimeout(continuousUpdatePosition, 2000);
 	}
 
 	function handleMessage(e) {
