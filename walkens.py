@@ -25,7 +25,7 @@ r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
 app = Flask(__name__)
 assets = Environment(app)
 
-js = Bundle('js/walken.js', 'js/grid.js', 'js/main.js', filters='jsmin', output='js/packed.js')
+js = Bundle('js/walken.js', 'js/grid.js', 'js/circle.js', 'js/main.js', filters='jsmin', output='js/packed.js')
 assets.register('js_all', js)
 
 canvasWidth = 400
@@ -44,13 +44,6 @@ def hashesToSearch(x, y):
 def eventStream(channels, userUuid):
 	pubsub = r.pubsub()
 	pubsub.subscribe(channels)
-	keys = set()
-	for c in channels:
-		for k in r.keys(c + '*'):
-			keys.add(k)
-	data = [r.get(k) for k in keys]
-	for d in data:
-		yield 'data: %s\n\n' % d
 	
 	for message in pubsub.listen():
 		if type(message['data']) != long:
@@ -131,6 +124,19 @@ def streamEvents(gHash, userUuid):
 	y = coords[1] * 1112.0
 	gHashes = hashesToSearch(x, y)
 	return Response(eventStream(gHashes, userUuid), mimetype='text/event-stream')
+
+@app.route('/marks/<gHash>/<userUuid>')
+def getMarks(gHash, userUuid):
+	coords = geohash.decode(gHash)
+	x = coords[0] * 1112.0
+	y = coords[1] * 1112.0
+	gHashes = hashesToSearch(x, y)
+	keys = set()
+	for c in gHashes:
+		for k in r.keys(c + '*'):
+			keys.add(k)
+	data = [json.loads(r.get(k)) for k in keys]
+	return json.dumps(data)
 
 if __name__ == '__main__':
 	app.debug = True

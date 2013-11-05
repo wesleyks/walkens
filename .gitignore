@@ -2,4 +2,5 @@ site.cfg
 main.pyc
 walkens.pyc
 static/.webassets-cache/*
+static/js/packed.js
 actions.log

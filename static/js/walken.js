@@ -11,6 +11,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		py = 1000 * Math.random() * (Math.random > 0 ? -1 : 1),
 		vy = 0.0,
 		objectList = {},
+		bigCircles = {},
+		smallCircles = {},
 		gHash = null,
 		streamSource = null,
 		uuid = null,
@@ -30,8 +32,6 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	}
 	function update() {
 		var neighborCount = 0;
-		//vx *= 0.99;
-		//vy *= 0.99;
 		px += vx;
 		py += vy;
 		if (Math.abs(px) > maxBounds || Math.abs(py) > maxBounds) {
@@ -44,11 +44,9 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			if (objectList[i].type == 'p' && objectList[i].uuid != uuid) {
 				neighborCount++;
 			}
-			//objectList[i].vx *= 0.99;
-			//objectList[i].vy *= 0.99;
 			objectList[i].x += objectList[i].vx;
 			objectList[i].y += objectList[i].vy;
-			if (objectList[i].lastUpdated + 10000 < d.getTime()) {
+			if ((objectList[i].type == 'p' && objectList[i].lastUpdated + 10000 < d.getTime()) || (Math.abs(objectList[i].x - px) > width && Math.abs(objectList[i].y) > height)) {
 				deleteList.push(i);
 			}
 		}
@@ -61,22 +59,22 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	function draw() {
 		context.clearRect(0, 0, width, height);
 		grid.drawBoard(px, py);
-		context.beginPath();
 		for (var i in objectList) {
-			var player = objectList[i];
-			if (player.uuid != uuid) {
-				context.beginPath();
-				if (player.type == 'p') {
-					context.fillStyle = player.color;
-					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 15, 0, Math.PI * 2);
+			var object = objectList[i];
+			if (object.uuid != uuid && Math.abs(object.x - px) <= (width / 2) && Math.abs(object.y) <= (height / 2)) {
+				if (object.type == 'p') {
+					if (!bigCircles[object.color]) {
+						bigCircles[object.color] = new Circle(object.color, 15);
+					}
+					bigCircles[object.color].drawCircle(context, width / 2 + (object.x - px), height / 2 - (object.y - py));
 				} else {
-					context.fillStyle = player.color;
-					context.arc(width / 2 + (parseFloat(player.x) - px), height / 2 - (parseFloat(player.y) - py), 4, 0, Math.PI * 2);
+					if (!smallCircles[object.color]) {
+						smallCircles[object.color] = new Circle(object.color, 4);
+					}
+					smallCircles[object.color].drawCircle(context, width / 2 + (object.x - px), height / 2 - (object.y - py));
 				}
-				context.fill();
 			}
 		}
-		context.closePath();
 		context.fillStyle = color;
 		context.beginPath();
 		context.arc(width / 2, height / 2, 15, 0, Math.PI * 2);
@@ -116,6 +114,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				}
 				streamSource = new EventSource('/events/' + gHash + '/' + uuid);
 				streamSource.onmessage = handleMessage;
+				getMarks();
 			}
 		});
 	}
@@ -140,6 +139,28 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				delete objectList[parsedData.uuid];
 			}
 		}
+	}
+
+	function getMarks() {
+		if (!uuid) {
+			return;
+		}
+		$.ajax({
+			url: '/marks/' + gHash + '/' + uuid,
+			type: 'GET',
+			dataType: 'json'
+		}).done(function(data) {
+			for (var i = 0; i < data.length; i++) {
+				var object = data[i],
+					d = new Date();
+				object.lastUpdated = d.getTime();
+				object.x = parseFloat(object.x);
+				object.y = parseFloat(object.y);
+				object.vx = parseFloat(object.vx);
+				object.vy = parseFloat(object.vy);
+				objectList[object.uuid] = object;
+			}
+		});
 	}
 
 	function leaveMark() {
