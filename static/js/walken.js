@@ -121,7 +121,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function continuousUpdatePosition() {
 		updatePosition('add');
-		setTimeout(continuousUpdatePosition, 2000);
+		setTimeout(continuousUpdatePosition, 3000);
 	}
 
 	function handleMessage(e) {
@@ -148,7 +148,8 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		$.ajax({
 			url: '/marks/' + gHash + '/' + uuid,
 			type: 'GET',
-			dataType: 'json'
+			dataType: 'json',
+			async: true
 		}).done(function(data) {
 			for (var i = 0; i < data.length; i++) {
 				var object = data[i],
