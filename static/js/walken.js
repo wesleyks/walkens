@@ -61,7 +61,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		grid.drawBoard(px, py);
 		for (var i in objectList) {
 			var object = objectList[i];
-			if (object.uuid != uuid && Math.abs(object.x - px) <= (width / 2) && Math.abs(object.y - py) <= (height / 2)) {
+			if (object.uuid != uuid) {
 				if (object.type == 'p') {
 					if (!bigCircles[object.color]) {
 						bigCircles[object.color] = new Circle(object.color, 15);
