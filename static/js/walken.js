@@ -85,7 +85,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	function run() {
 		update();
 		draw();
-		requestAnimationFrame(run);
+		setTimeout(run, 16.67);
 	}
 
 	function updatePosition(action) {
@@ -180,9 +180,9 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 	}
 
 	function start() {
-		run();
 		continuousUpdatePosition('add');
 		color = getRandomColor();
+		run();
 		//bg.play();
 		window.onbeforeunload = function() {
 			updatePosition('remove');
