@@ -121,7 +121,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 
 	function continuousUpdatePosition() {
 		updatePosition('add');
-		setTimeout(continuousUpdatePosition, 3000);
+		setTimeout(continuousUpdatePosition, 2000);
 	}
 
 	function handleMessage(e) {

@@ -29,15 +29,15 @@ js = Bundle('js/walken.js', 'js/grid.js', 'js/circle.js', 'js/main.js', filters=
 assets.register('js_all', js)
 
 canvasWidth = 400
-offsetX = float(canvasWidth) / 2.0
+offsetX = float(canvasWidth) / 8.0
 canvasHeight = 400
-offsetY = float(canvasHeight) / 2.0
+offsetY = float(canvasHeight) / 8.0
 
 def hashesToSearch(x, y):
 	gHashes = set()
-	for i in [-8.0, -4.0, 0.0, 4.0, 8.0]:
-		for j in [-8.0, -4.0, 0.0, 4.0, 8.0]:
-			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 3)
+	for i in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
+		for j in [-6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0]:
+			subHash = geohash.encode((x + i * offsetX) / 1112.0, (y + j * offsetY) / 1112.0, 4)
 			gHashes.add(subHash)
 	return gHashes
 
@@ -69,7 +69,7 @@ def storeMark():
 	y = request.form['y']
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
-	gHash = geohash.encode(modifiedX, modifiedY, 3)
+	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	key = gHash + markId
 	value = {
 		'action': 'add',
@@ -100,7 +100,7 @@ def storePosition():
 	action = request.form['action']
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
-	gHash = geohash.encode(modifiedX, modifiedY, 3)
+	gHash = geohash.encode(modifiedX, modifiedY, 4)
 	value = {
 		'action': action,
 		'type': 'p',
@@ -139,5 +139,5 @@ def getMarks(gHash, userUuid):
 	return json.dumps(data)
 
 if __name__ == '__main__':
-	app.debug = True
+	app.debug = False
 	app.run(host='0.0.0.0')
