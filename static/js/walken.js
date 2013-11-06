@@ -54,6 +54,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 			delete objectList[deleteList[i]];
 		}
 		document.title = neighborCount + ' nearby';
+		setTimeout(update, 16.6667);
 	}
 
 	function draw() {
@@ -80,12 +81,12 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		context.arc(width / 2, height / 2, 15, 0, Math.PI * 2);
 		context.fill();
 		context.closePath();
+		requestAnimationFrame(draw);
 	}
 
 	function run() {
 		update();
 		draw();
-		setTimeout(run, 16.67);
 	}
 
 	function updatePosition(action) {
