@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, Response
 from flask.ext.assets import Environment, Bundle
+from pymongo import MongoClient
+from datetime import datetime, timedelta
 import uuid
 import redis
 import geohash
@@ -13,6 +15,10 @@ redisHost = cfg.get('redis', 'host')
 redisPort = cfg.get('redis', 'port')
 redisDb = cfg.get('redis', 'db')
 
+mongoHost = cfg.get('mongo', 'host')
+mongoPort = cfg.get('mongo', 'port')
+mongoDb = cfg.get('mongo', 'db')
+
 production = cfg.get('server', 'production') == 'True'
 logfile = cfg.get('server', 'logfile')
 
@@ -20,7 +26,10 @@ if production:
 	LOGFORMAT = '%(asctime)s %(message)s'
 	logging.basicConfig(filename=logfile,level=logging.INFO, format=LOGFORMAT)
 
-r = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
+redisClient = redis.StrictRedis(host=redisHost, port=int(redisPort), db=int(redisDb))
+
+mongoClient = MongoClient(mongoHost, int(mongoPort))[mongoDb]
+mongoMarks = mongoClient.marks
 
 app = Flask(__name__)
 assets = Environment(app)
@@ -42,7 +51,7 @@ def hashesToSearch(x, y):
 	return gHashes
 
 def eventStream(channels, userUuid):
-	pubsub = r.pubsub()
+	pubsub = redisClient.pubsub()
 	pubsub.subscribe(channels)
 	
 	for message in pubsub.listen():
@@ -70,7 +79,6 @@ def storeMark():
 	modifiedX = float(x) / 1112.0
 	modifiedY = float(y) / 1112.0
 	gHash = geohash.encode(modifiedX, modifiedY, 4)
-	key = gHash + markId
 	value = {
 		'action': 'add',
 		'type': 'm',
@@ -82,9 +90,14 @@ def storeMark():
 		'vy': 0.0
 	}
 	valueJson = json.dumps(value)
-	r.publish(gHash, valueJson)
-	r.set(key, valueJson)
-	r.expire(key, 1000)
+	redisClient.publish(gHash, valueJson)
+	mark = {
+		'_id': markId,
+		'geoHash': gHash,
+		'utcDate': datetime.utcnow(),
+		'value': value
+	}
+	mongoMarks.insert(mark)
 	if production:
 		logging.info('data: ' + valueJson)
 	return '0'
@@ -112,7 +125,7 @@ def storePosition():
 		'vy': vy
 	}
 	valueJson = json.dumps(value)
-	r.publish(gHash, valueJson)
+	redisClient.publish(gHash, valueJson)
 	if production:
 		logging.info('data: ' + valueJson)
 	return gHash
@@ -131,11 +144,8 @@ def getMarks(gHash, userUuid):
 	x = coords[0] * 1112.0
 	y = coords[1] * 1112.0
 	gHashes = hashesToSearch(x, y)
-	keys = set()
-	for c in gHashes:
-		for k in r.keys(c + '*'):
-			keys.add(k)
-	data = [json.loads(r.get(k)) for k in keys]
+	dtThreshold = datetime.utcnow() - timedelta(hours=6)
+	data = [mark['value'] for mark in mongoMarks.find({'geoHash': {'$in': list(gHashes)}, 'utcDate': {'$gt': dtThreshold}})]
 	return json.dumps(data)
 
 if __name__ == '__main__':
