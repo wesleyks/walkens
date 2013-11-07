@@ -56,7 +56,7 @@ def eventStream(channels, userUuid):
 
 	dtThreshold = datetime.utcnow() - timedelta(hours=6)
 	for mark in mongoMarks.find({'geoHash': {'$in': list(channels)}, 'utcDate': {'$gt': dtThreshold}}):
-		yield 'data:%s\n\n' % json.dumps(mark['data'])
+		yield 'data:%s\n\n' % json.dumps(mark['value'])
 	
 	for message in pubsub.listen():
 		if type(message['data']) != long:
