@@ -109,13 +109,13 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 		}).done(function(data) {
 			if (data != gHash) {
 				gHash = data;
-				if (streamSource != null) {
+				if (streamSource !== null) {
 					updatePosition('closeStream');
 					streamSource.close();
 				}
 				streamSource = new EventSource('/events/' + gHash + '/' + uuid);
 				streamSource.onmessage = handleMessage;
-				getMarks();
+				//getMarks();
 			}
 		});
 	}
