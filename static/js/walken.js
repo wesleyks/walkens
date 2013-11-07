@@ -115,7 +115,7 @@ function Walken(canvas, canvasWidth, canvasHeight, beacon, bg) {
 				}
 				streamSource = new EventSource('/events/' + gHash + '/' + uuid);
 				streamSource.onmessage = handleMessage;
-				//getMarks();
+				setTimeout(getMarks, 50);
 			}
 		});
 	}
