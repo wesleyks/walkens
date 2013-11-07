@@ -53,6 +53,10 @@ def hashesToSearch(x, y):
 def eventStream(channels, userUuid):
 	pubsub = redisClient.pubsub()
 	pubsub.subscribe(channels)
+
+	dtThreshold = datetime.utcnow() - timedelta(hours=6)
+	for mark in mongoMarks.find({'geoHash': {'$in': list(channels)}, 'utcDate': {'$gt': dtThreshold}}):
+		yield 'data:%s\n\n' % json.dumps(mark['data'])
 	
 	for message in pubsub.listen():
 		if type(message['data']) != long:
@@ -146,7 +150,7 @@ def getMarks(gHash, userUuid):
 	gHashes = hashesToSearch(x, y)
 	dtThreshold = datetime.utcnow() - timedelta(hours=6)
 	data = [mark['value'] for mark in mongoMarks.find({'geoHash': {'$in': list(gHashes)}, 'utcDate': {'$gt': dtThreshold}})]
-	return json.dumps(data)
+	return '[]'#return json.dumps(data)
 
 if __name__ == '__main__':
 	app.debug = False
